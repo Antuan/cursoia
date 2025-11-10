@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Curso IA — Presentación de Alumnos</title>
+  <!--
+    Proyecto: Curso IA — Página principal
+    Requisitos cumplidos:
+    - HTML5 + CSS3, diseño moderno, colores azul y blanco
+    - Responsive (mobile-first)
+    - Menú desplegable con subopciones especificadas
+    - Carrusel con imágenes y botón para crear CV
+    - 8 fichas de alumnos en 2 columnas (en desktop), estilo currículum breve
+    - Enlace por alumno para ver currículum detallado (modal/overlay)
+    - Banner hacia el Blog corporativo
+    - Pie de página con enlaces (2 columnas) y redes sociales a la derecha
+    - Comentarios en el código
+  -->
+
+  <!-- Fuente y normalización básica -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      /* Paleta principal azul/blanco */
+      --azul-500:#1e3a8a;  /* azul principal (nav, botones) */
+      --azul-600:#1a2f6f;  /* hover */
+      --azul-300:#3b82f6;  /* acentos claros */
+      --azul-50:#f0f5ff;   /* fondos suaves */
+      --blanco:#ffffff;
+      --gris-700:#374151;
+      --gris-500:#6b7280;
+      --borde:#e5e7eb;
+      --shadow: 0 10px 25px rgba(0,0,0,.08);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --container: 1200px;
+    }
+
+    /* Reset mínimo */
+    *,*::before,*::after{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;color:#0f172a;background:var(--blanco)}
+    img{max-width:100%;display:block}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+
+    /* Utilidades */
+    .container{width:100%;max-width:var(--container);margin:0 auto;padding:0 1rem}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1rem;border-radius:999px;border:1px solid transparent;background:var(--azul-500);color:var(--blanco);font-weight:600;box-shadow:var(--shadow);transition:.2s}
+    .btn:hover{background:var(--azul-600);transform:translateY(-1px)}
+    .btn-outline{background:transparent;color:var(--azul-500);border-color:var(--azul-500)}
+    .btn-outline:hover{background:var(--azul-50)}
+    .tag{display:inline-block;background:var(--azul-50);color:var(--azul-500);padding:.25rem .5rem;border-radius:999px;font-size:.75rem;font-weight:600}
+
+    /* Header fijo con sombra */
+    header{
+      position:sticky;top:0;z-index:50;background:var(--blanco);box-shadow:0 2px 16px rgba(30,58,138,.08)
+    }
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0}
+    .brand{display:flex;align-items:center;gap:.6rem}
+    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--azul-500),#60a5fa)}
+    .brand h1{font-size:1.1rem;margin:0;font-weight:800;color:var(--azul-500)}
+
+    /* Menú */
+    .menu{display:flex;align-items:center;gap:1rem}
+    .menu>li{position:relative;list-style:none}
+    .menu a.toplink{display:flex;align-items:center;gap:.35rem;padding:.5rem .75rem;border-radius:999px;color:var(--gris-700);font-weight:600}
+    .menu a.toplink:hover{background:var(--azul-50);color:var(--azul-500)}
+
+    /* Dropdowns */
+    .dropdown{position:absolute;left:0;top:calc(100% + .5rem);min-width:250px;background:var(--blanco);border:1px solid var(--borde);border-radius:var(--radius);box-shadow:var(--shadow);padding:.5rem;display:none}
+    .menu>li:focus-within .dropdown, .menu>li:hover .dropdown{display:block}
+    .dropdown a{display:flex;align-items:start;gap:.6rem;padding:.6rem .75rem;border-radius:.6rem;color:var(--gris-700)}
+    .dropdown a:hover{background:var(--azul-50);color:var(--azul-500)}
+
+    /* Hamburguesa móvil */
+    .burger{display:none;border:1px solid var(--borde);background:var(--blanco);border-radius:10px;padding:.5rem}
+    .burger span{display:block;width:22px;height:2px;background:var(--gris-700);margin:4px 0;border-radius:2px}
+
+    @media (max-width: 900px){
+      .menu{display:none;position:absolute;left:1rem;right:1rem;top:64px;background:var(--blanco);border:1px solid var(--borde);border-radius:var(--radius);padding:.75rem;flex-direction:column}
+      .menu.open{display:flex}
+      .dropdown{position:static;display:none;border:none;box-shadow:none;padding:0;margin-left:.75rem}
+      .menu>li.open>.dropdown{display:flex;flex-direction:column}
+      .burger{display:inline-block}
+    }
+
+    /* Hero / Carrusel */
+    .hero{background:linear-gradient(180deg, var(--azul-50), rgba(255,255,255,0));padding:1rem 0 2rem}
+    .carousel{position:relative;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+    .slide{display:none;position:relative}
+    .slide.active{display:block}
+    .slide img{width:100%;height:420px;object-fit:cover}
+    .slide .overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,20,60,.55),rgba(0,0,0,.0))}
+    .slide .content{position:absolute;left:5%;bottom:8%;max-width:520px;color:var(--blanco)}
+    .slide h2{margin:.2rem 0 0;font-size:2rem;line-height:1.1}
+    .slide p{margin:.6rem 0 1rem;color:#e5edff}
+    .ctrl{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.9);border:1px solid var(--borde);width:42px;height:42px;border-radius:50%;display:grid;place-items:center;cursor:pointer}
+    .ctrl:hover{background:var(--blanco)}
+    .prev{left:.75rem} .next{right:.75rem}
+    .dots{position:absolute;left:50%;transform:translateX(-50%);bottom:.75rem;display:flex;gap:.5rem}
+    .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.1);cursor:pointer}
+    .dot.active{background:var(--blanco)}
+
+    /* Grid de alumnos (2 columnas en desktop) */
+    .alumnos{padding:2rem 0}
+    .alumnos h3{margin:0 0 1rem;font-size:1.5rem;color:var(--azul-500)}
+    .grid{display:grid;grid-template-columns:1fr;gap:1rem}
+    @media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+
+    .card{display:grid;grid-template-columns:120px 1fr;gap:1rem;align-items:center;padding:1rem;border:1px solid var(--borde);border-radius:var(--radius);background:var(--blanco);box-shadow:var(--shadow)}
+    .avatar{width:100%;height:120px;border-radius:12px;object-fit:cover}
+    .card h4{margin:.2rem 0;font-size:1.15rem}
+    .meta{color:var(--gris-500);font-size:.9rem}
+    .actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+
+    @media(max-width:520px){
+      .card{grid-template-columns:1fr}
+      .avatar{height:220px}
+    }
+
+    /* Banner blog */
+    .banner{margin:1.5rem 0 2.5rem;padding:1.25rem;border-radius:var(--radius);background:linear-gradient(90deg, var(--azul-500), #60a5fa);color:var(--blanco);display:flex;align-items:center;justify-content:space-between;gap:1rem}
+    .banner p{margin:0;opacity:.95}
+
+    /* Footer */
+    footer{background:var(--azul-50);border-top:1px solid var(--borde)}
+    .footer{display:grid;grid-template-columns:2fr 1fr;gap:2rem;padding:2rem 0}
+    @media(max-width:900px){.footer{grid-template-columns:1fr}}
+    .footer h5{margin:0 0 .75rem;color:var(--azul-500);font-size:1rem}
+    .footer-links{display:grid;grid-template-columns:1fr 1fr;gap:.5rem 2rem}
+    .footer a{color:var(--gris-700)}
+    .social{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+    .social a{display:inline-flex;align-items:center;gap:.5rem;background:var(--blanco);border:1px solid var(--borde);padding:.5rem .75rem;border-radius:999px}
+    .social svg{width:16px;height:16px}
+
+    /* Modal CV detallado */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:1rem}
+    .modal.open{display:flex}
+    .modal-card{width:min(900px,100%);background:var(--blanco);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--borde)}
+    .modal-body{display:grid;grid-template-columns:260px 1fr;gap:1rem;padding:1.25rem}
+    .modal-body img{border-radius:12px}
+    .close{background:transparent;border:1px solid var(--borde);border-radius:8px;padding:.4rem .6rem}
+    @media(max-width:760px){.modal-body{grid-template-columns:1fr}}
+    .cv-sec{margin-bottom:.75rem}
+    .cv-sec h6{margin:.2rem 0 .4rem;font-size:.95rem;color:var(--azul-500)}
+    .cv-list{margin:0;padding-left:1rem;color:var(--gris-700)}
+
+    /* Pequeños detalles */
+    .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size:.8rem;background:#eef2ff;color:#3730a3;padding:.15rem .35rem;border-radius:.3rem;border:1px solid #e0e7ff}
+  </style>
+</head>
+<body>
+  <!-- ======= CABECERA ======= -->
+  <header aria-label="Cabecera y navegación principal">
+    <div class="container nav">
+      <a class="brand" href="#" aria-label="Inicio Curso IA">
+        <span class="logo" aria-hidden="true"></span>
+        <h1>Curso IA</h1>
+      </a>
+
+      <!-- Botón hamburguesa para móviles -->
+      <button class="burger" id="burger" aria-label="Abrir o cerrar menú">
+        <span></span><span></span><span></span>
+      </button>
+
+      <!-- Menú principal con desplegables -->
+      <ul class="menu" id="menu">
+        <li>
+          <a href="#" class="toplink" aria-haspopup="true">Herramientas ▾</a>
+          <div class="dropdown" aria-label="Submenú Herramientas">
+            <a href="#" aria-label="Ir al editor de CV">📝 Editor CV</a>
+          </div>
+        </li>
+        <li>
+          <a href="#" class="toplink" aria-haspopup="true">Currículum Vitae ▾</a>
+          <div class="dropdown" aria-label="Submenú Currículum Vitae">
+            <a href="#">📤 Enviar currículum</a>
+            <a href="#">📄 Plantillas de currículum</a>
+          </div>
+        </li>
+        <li>
+          <a href="#" class="toplink" aria-haspopup="true">Blog ▾</a>
+          <div class="dropdown" aria-label="Submenú Blog">
+            <a href="#">💡 Consejos para tu currículum</a>
+            <a href="#">🌐 Tu currículum en inglés</a>
+            <a href="#">🇪🇺 Currículum europeo</a>
+          </div>
+        </li>
+        <li>
+          <a href="#" class="toplink">Quiénes somos</a>
+        </li>
+        <li>
+          <a href="#" class="toplink" aria-haspopup="true">Mi cuenta ▾</a>
+          <div class="dropdown" aria-label="Submenú Mi cuenta">
+            <a href="#">🔐 Iniciar sesión</a>
+            <a href="#">🆕 Registrarse</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ======= CARRUSEL ======= -->
+  <section class="hero" aria-label="Carrusel de inicio">
+    <div class="container">
+      <div class="carousel" id="carousel" aria-roledescription="carousel">
+        <!-- Slide 1 -->
+        <div class="slide active" data-index="0">
+          <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1600&auto=format&fit=crop" alt="Personas trabajando en equipo" />
+          <div class="overlay"></div>
+          <div class="content">
+            <span class="tag">Curso IA</span>
+            <h2>Crea tu currículum profesional en minutos</h2>
+            <p>Utiliza nuestras plantillas y consejos para destacar tu perfil de forma clara y moderna.</p>
+            <a href="#" class="btn">Crear mi CV</a>
+          </div>
+        </div>
+        <!-- Slide 2 -->
+        <div class="slide" data-index="1">
+          <img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=1600&auto=format&fit=crop" alt="Portátil con editor de documentos" />
+          <div class="overlay"></div>
+          <div class="content">
+            <span class="tag">Plantillas</span>
+            <h2>Plantillas listas para usar</h2>
+            <p>Escoge un diseño, rellena tus datos y exporta en PDF con un clic.</p>
+            <a href="#" class="btn btn-outline">Ver plantillas</a>
+          </div>
+        </div>
+        <!-- Slide 3 -->
+        <div class="slide" data-index="2">
+          <img src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?q=80&w=1600&auto=format&fit=crop" alt="Entrevista de trabajo" />
+          <div class="overlay"></div>
+          <div class="content">
+            <span class="tag">Orientación</span>
+            <h2>Consejos prácticos para tu búsqueda</h2>
+            <p>Aprende a adaptar tu CV a cada oferta y a superar entrevistas.</p>
+            <a href="#" class="btn">Leer consejos</a>
+          </div>
+        </div>
+
+        <!-- Controles -->
+        <button class="ctrl prev" aria-label="Anterior" id="prev">‹</button>
+        <button class="ctrl next" aria-label="Siguiente" id="next">›</button>
+        <div class="dots" id="dots" aria-label="Indicadores del carrusel"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= FICHAS DE ALUMNOS ======= -->
+  <section class="alumnos container" aria-label="Listado de alumnos">
+    <h3>Alumnos destacados</h3>
+    <!--
+      Cada tarjeta incluye: fotografía, nombre, apellidos, organismo y enlace a CV.
+      El enlace abre un modal con el currículum detallado (sin salir de la página).
+    -->
+    <div class="grid" id="gridAlumnos">
+      <!-- Las tarjetas se inyectan vía JS con los datos del array students -->
+    </div>
+  </section>
+
+  <!-- ======= BANNER BLOG ======= -->
+  <section class="container">
+    <div class="banner" role="region" aria-label="Acceso al Blog corporativo">
+      <div>
+        <strong>¿Quieres mejorar tu CV?</strong>
+        <p>Visita nuestro Blog corporativo para aprender a destacar tus logros y experiencia.</p>
+      </div>
+      <a href="#" class="btn" aria-label="Ir al Blog corporativo">Ir al Blog</a>
+    </div>
+  </section>
+
+  <!-- ======= FOOTER ======= -->
+  <footer>
+    <div class="container footer">
+      <!-- Enlaces del menú (2 columnas) -->
+      <div>
+        <h5>Enlaces rápidos</h5>
+        <div class="footer-links">
+          <div>
+            <a href="#">🛠️ Herramientas</a><br>
+            <a href="#">— Editor CV</a><br>
+            <a href="#">🧾 Currículum Vitae</a><br>
+            <a href="#">— Enviar currículum</a><br>
+            <a href="#">— Plantillas de currículum</a>
+          </div>
+          <div>
+            <a href="#">📰 Blog</a><br>
+            <a href="#">— Consejos para tu currículum</a><br>
+            <a href="#">— Tu currículum en inglés</a><br>
+            <a href="#">— Currículum europeo</a><br>
+            <a href="#">👥 Quiénes somos</a><br>
+            <a href="#">👤 Mi cuenta</a><br>
+            <a href="#">— Iniciar sesión</a><br>
+            <a href="#">— Registrarse</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Redes sociales -->
+      <div>
+        <h5>Síguenos</h5>
+        <div class="social" aria-label="Redes sociales Curso IA">
+          <a href="#" aria-label="Twitter de Curso IA"> 
+            <!-- icono twitter -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0012 7.5v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>
+            Twitter
+          </a>
+          <a href="#" aria-label="LinkedIn de Curso IA">
+            <!-- icono linkedin -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+            LinkedIn
+          </a>
+          <a href="#" aria-label="YouTube de Curso IA">
+            <!-- icono youtube -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-2C18.88 4 12 4 12 4s-6.88 0-8.59.42a2.78 2.78 0 00-1.95 2A29 29 0 001 12a29 29 0 00.46 5.58 2.78 2.78 0 001.95 2C5.12 20 12 20 12 20s6.88 0 8.59-.42a2.78 2.78 0 001.95-2A29 29 0 0023 12a29 29 0 00-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>
+            YouTube
+          </a>
+          <a href="#" aria-label="Instagram de Curso IA">
+            <!-- icono instagram -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            Instagram
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======= MODAL DETALLE CV ======= -->
+  <div class="modal" id="modalCV" aria-hidden="true" role="dialog" aria-label="Currículum detallado">
+    <div class="modal-card" role="document">
+      <div class="modal-head">
+        <strong id="cvNombre">Nombre Apellido</strong>
+        <button class="close" id="cerrarModal" aria-label="Cerrar">Cerrar</button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <img id="cvFoto" src="" alt="Foto del alumno" />
+          <div class="cv-sec">
+            <h6>Organismo</h6>
+            <div id="cvOrganismo">—</div>
+          </div>
+          <div class="cv-sec">
+            <h6>Contacto</h6>
+            <div id="cvContacto">correo@ejemplo.com</div>
+          </div>
+        </div>
+        <div>
+          <div class="cv-sec">
+            <h6>Perfil</h6>
+            <p id="cvPerfil">Resumen profesional del alumno…</p>
+          </div>
+          <div class="cv-sec">
+            <h6>Experiencia</h6>
+            <ul id="cvExperiencia" class="cv-list"></ul>
+          </div>
+          <div class="cv-sec">
+            <h6>Educación</h6>
+            <ul id="cvEducacion" class="cv-list"></ul>
+          </div>
+          <div class="cv-sec">
+            <h6>Competencias</h6>
+            <ul id="cvSkills" class="cv-list"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ======= Datos de ejemplo (8 alumnos) =======
+    const students = [
+      {
+        nombre: 'Lucía', apellidos: 'García Pérez', organismo: 'Universidad Tecnológica',
+        foto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop',
+        perfil: 'Diseñadora UX/UI con enfoque en accesibilidad y diseño inclusivo.',
+        contacto: 'lucia.garcia@universidad.edu',
+        experiencia: ['UX Designer — Estudio Pixel (2023–2025)', 'UI Designer — StartApp (2021–2023)'],
+        educacion: ['Grado en Diseño — U. Creativa (2017–2021)'],
+        skills: ['Figma','Design Systems','HTML/CSS','Accesibilidad']
+      },
+      {
+        nombre: 'Carlos', apellidos: 'Martínez López', organismo: 'Consejería de Innovación',
+        foto: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?q=80&w=800&auto=format&fit=crop',
+        perfil: 'Analista de datos con interés en IA aplicada a políticas públicas.',
+        contacto: 'carlos.martinez@innovacion.es',
+        experiencia: ['Data Analyst — GovLab (2022–2025)', 'BI Intern — DataCo (2021–2022)'],
+        educacion: ['Máster en Ciencia de Datos — U. Estatal (2021–2022)'],
+        skills: ['Python','Pandas','SQL','Tableau']
+      },
+      {
+        nombre: 'María', apellidos: 'Santos Rubio', organismo: 'Ayuntamiento de Sevilla',
+        foto: 'https://images.unsplash.com/photo-1524504542391-127872011665?q=80&w=800&auto=format&fit=crop',
+        perfil: 'Gestora cultural con experiencia en proyectos europeos.',
+        contacto: 'maria.santos@sevilla.es',
+        experiencia: ['Coordinadora — Cultura Abierta (2020–2025)'],
+        educacion: ['Lic. Gestión Cultural — U. de Sevilla (2015–2019)'],
+        skills: ['Project Management','Comunicacion','Inglés C1','Fundraising']
+      },
+      {
+        nombre: 'Javier', apellidos: 'López Navarro', organismo: 'Agencia Digital',
+        foto: 'https://images.unsplash.com/photo-1544006659-f0b21884ce1d?q=80&w=800&auto=format&fit=crop',
+        perfil: 'Desarrollador Frontend enfocado en rendimiento y UX.',
+        contacto: 'javier.lopez@agenciadigital.com',
+        experiencia: ['Frontend Dev — WebWorks (2022–2025)', 'Jr Dev — CodeLab (2020–2022)'],
+        educacion: ['Grado en Ingeniería Informática — U. Politécnica (2016–2020)'],
+        skills: ['JavaScript','React','CSS','Web Performance']
+      },
+      {
+        nombre: 'Elena', apellidos: 'Romero Díaz', organismo: 'Instituto de Investigación',
+        foto: 'https://images.unsplash.com/photo-1520880867055-1e30d1cb001c?q=80&w=800&auto=format&fit=crop',
+        perfil: 'Investigadora en procesamiento de lenguaje natural.',
+        contacto: 'elena.romero@iiri.org',
+        experiencia: ['NLP Researcher — IIRI (2021–2025)'],
+        educacion: ['PhD en Informática — U. Autónoma (2017–2021)'],
+        skills: ['Python','Transformers','NLP','MLOps']
+      },
+      {
+        nombre: 'Andrés', apellidos: 'Serrano Vega', organismo: 'Empresa Pública de Medios',
+        foto: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=800&auto=format&fit=crop',
+        perfil: 'Productor multimedia con experiencia en streaming y sonido.',
+        contacto: 'andres.serrano@epm.es',
+        experiencia: ['Productor — EPM (2019–2025)'],
+        educacion: ['Téc. Sonido — CFP Artes (2016–2018)'],
+        skills: ['Premiere','After Effects','Pro Tools','Broadcast']
+      },
+      {
+        nombre: 'Sofía', apellidos: 'Muñoz Ortega', organismo: 'Consejo Superior de Deportes',
+        foto: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?q=80&w=800&auto=format&fit=crop',
+        perfil: 'Gestora de proyectos deportivos con enfoque en igualdad.',
+        contacto: 'sofia.munoz@csd.es',
+        experiencia: ['PM — ProDeporte (2020–2025)'],
+        educacion: ['MBA — U. de Zaragoza (2018–2019)'],
+        skills: ['Scrum','KPIs','Budgeting','Stakeholders']
+      },
+      {
+        nombre: 'Diego', apellidos: 'Castro Morales', organismo: 'Junta de Andalucía',
+        foto: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop',
+        perfil: 'Técnico de sistemas con certificaciones cloud.',
+        contacto: 'diego.castro@junta.es',
+        experiencia: ['SysAdmin — InfraTech (2018–2025)'],
+        educacion: ['Grado en Telecomunicaciones — U. de Málaga (2013–2017)'],
+        skills: ['Linux','AWS','Terraform','Networking']
+      }
+    ];
+
+    // ======= Render de tarjetas =======
+    const grid = document.getElementById('gridAlumnos');
+    grid.innerHTML = students.map((s, i) => `
+      <article class="card" aria-label="Ficha de ${s.nombre} ${s.apellidos}">
+        <img class="avatar" src="${s.foto}" alt="Foto de ${s.nombre} ${s.apellidos}">
+        <div>
+          <h4>${s.nombre} ${s.apellidos}</h4>
+          <div class="meta">${s.organismo}</div>
+          <p style="margin:.5rem 0 0">${s.perfil}</p>
+          <div class="actions">
+            <a href="#" class="btn" data-open-cv="${i}">Ver CV</a>
+            <a href="mailto:${s.contacto}" class="btn btn-outline">Contactar</a>
+          </div>
+        </div>
+      </article>
+    `).join('');
+
+    // ======= Modal de CV (detallado) =======
+    const modal = document.getElementById('modalCV');
+    const cerrarModal = document.getElementById('cerrarModal');
+    const cvNombre = document.getElementById('cvNombre');
+    const cvFoto = document.getElementById('cvFoto');
+    const cvOrganismo = document.getElementById('cvOrganismo');
+    const cvContacto = document.getElementById('cvContacto');
+    const cvPerfil = document.getElementById('cvPerfil');
+    const cvExperiencia = document.getElementById('cvExperiencia');
+    const cvEducacion = document.getElementById('cvEducacion');
+    const cvSkills = document.getElementById('cvSkills');
+
+    function openCV(index){
+      const s = students[index];
+      if(!s) return;
+      cvNombre.textContent = `${s.nombre} ${s.apellidos}`;
+      cvFoto.src = s.foto;
+      cvFoto.alt = `Foto de ${s.nombre} ${s.apellidos}`;
+      cvOrganismo.textContent = s.organismo;
+      cvContacto.innerHTML = `<a href="mailto:${s.contacto}">${s.contacto}</a>`;
+      cvPerfil.textContent = s.perfil;
+      cvExperiencia.innerHTML = s.experiencia.map(e=>`<li>${e}</li>`).join('');
+      cvEducacion.innerHTML = s.educacion.map(e=>`<li>${e}</li>`).join('');
+      cvSkills.innerHTML = s.skills.map(e=>`<li>${e}</li>`).join('');
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+    }
+
+    function closeCV(){
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+    }
+
+    // Delegación para abrir modal desde botones "Ver CV"
+    grid.addEventListener('click', (e)=>{
+      const btn = e.target.closest('[data-open-cv]');
+      if(btn){
+        e.preventDefault();
+        openCV(btn.getAttribute('data-open-cv'));
+      }
+    });
+    cerrarModal.addEventListener('click', closeCV);
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) closeCV(); });
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeCV(); });
+
+    // ======= Carrusel simple =======
+    const slides = [...document.querySelectorAll('.slide')];
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    const dots = document.getElementById('dots');
+    let current = 0;
+
+    function renderDots(){
+      dots.innerHTML = slides.map((_,i)=>`<button class="dot ${i===current?'active':''}" aria-label="Ir a la diapositiva ${i+1}" data-dot="${i}"></button>`).join('');
+    }
+
+    function goTo(i){
+      slides[current].classList.remove('active');
+      current = (i + slides.length) % slides.length;
+      slides[current].classList.add('active');
+      renderDots();
+    }
+
+    prev.addEventListener('click', ()=> goTo(current-1));
+    next.addEventListener('click', ()=> goTo(current+1));
+    dots.addEventListener('click', (e)=>{
+      const d = e.target.closest('[data-dot]');
+      if(d) goTo(parseInt(d.dataset.dot, 10));
+    });
+
+    // Auto-play (se pausa con interacción)
+    let timer = setInterval(()=> goTo(current+1), 6000);
+    ['click','keydown','touchstart','mouseenter'].forEach(ev=>{
+      document.getElementById('carousel').addEventListener(ev, ()=>{ clearInterval(timer); }, { once:true });
+    });
+
+    renderDots();
+
+    // ======= Menú responsive (hamburguesa + submenús) =======
+    const burger = document.getElementById('burger');
+    const menu = document.getElementById('menu');
+    burger.addEventListener('click', ()=> menu.classList.toggle('open'));
+
+    // Permitir abrir submenús en móvil con toque/clic
+    menu.querySelectorAll(':scope > li > a.toplink').forEach(link=>{
+      link.addEventListener('click', (e)=>{
+        if(window.innerWidth <= 900){
+          e.preventDefault();
+          const li = e.currentTarget.parentElement;
+          li.classList.toggle('open');
+        }
+      });
+    });
+
+    // ======= Nota de accesibilidad =======
+    // Usuarios de teclado: puede navegar el menú con <Tab> y abrir submenús con <Enter>.
+    // Indicamos visualmente el enfoque con el hover y estructura semántica.
+    // Añada atributos aria-expanded si conecta con un sistema de control de foco más avanzado.
+  </script>
+</body>
+</html>

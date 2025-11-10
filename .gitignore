@@ -1,0 +1,22 @@
+.DS_Store
+Thumbs.db
+
+# Temporales y caché
+*.log
+*.tmp
+*.swp
+.cache/
+node_modules/
+
+# Compilados
+dist/
+build/
+
+# Entornos locales y configuraciones
+.env
+.vscode/
+.idea/
+
+# Archivos personales o de exportación
+*.zip
+*.bak
